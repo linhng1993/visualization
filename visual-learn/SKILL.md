@@ -118,7 +118,7 @@ The hub uses steps 2–4 with `assets/hub-template.html` and the slug from the i
 ## Files
 
 - `assets/page-template.html` — the page. Edit only the DATA block (includes `nav.hub`, the "← Hub" button).
-- `assets/hub-template.html` — the project hub: progress tiles, curriculum, milestones, buttons for every artifact.
+- `assets/hub-template.html` — the project hub: progress tiles, curriculum, milestones, buttons for every artifact, with a sticky section jump bar.
 - `scripts/check_page.mjs` — rule checker for pages; takes one or more files (limits, colour clashes, missing self-test, bad `nav.hub`).
 - `scripts/check_hub.mjs` — hub checker (empty or duplicate url, unknown kind, done > total).
 - `scripts/fill_data.mjs` — puts a DATA block into the page or hub template.

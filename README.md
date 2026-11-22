@@ -9,7 +9,7 @@ Pages are plain HTML with no dependencies. They support dark mode and print to A
 | Piece | What it does |
 |---|---|
 | Review page | One learning chunk per page. Colour-coded, 3–7 items per level, short labels, ends with active recall. |
-| Hub | One page per project: progress tiles, curriculum bars, milestone timeline with a "today" line, and buttons to all artifacts. |
+| Hub | One page per project: progress tiles, curriculum bars, milestone timeline with a "today" line, a sticky section jump bar, and buttons to all artifacts. |
 | Subject packs | Per-subject settings: leaf format, colour meanings, icons, self-test style. |
 | Checkers | `check_page.mjs` and `check_hub.mjs` enforce the layout limits before publishing. |
 

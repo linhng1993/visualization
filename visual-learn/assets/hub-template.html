@@ -14,7 +14,14 @@ header{text-align:center;margin-bottom:16px}
 header .ico{font-size:44px}
 header h1{margin:4px 0 0;font-size:26px}
 header p{margin:4px 0 0;color:var(--muted);font-size:14px}
-h2{margin:22px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{margin:22px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);scroll-margin-top:64px}
+.nav{position:sticky;top:0;z-index:10;margin:0 -14px 4px;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font:600 15px/1 inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+.nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.nav button:active{transform:scale(.96)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .tile .v{font-size:28px;font-weight:800;line-height:1.1}
@@ -40,6 +47,7 @@ a.btn .i{font-size:28px}
 a.btn .t{font-weight:700;font-size:18px}
 a.btn .s{color:var(--muted);font-size:14px}
 a.btn:active{transform:scale(.98)}
+@media print{.nav{display:none}}
 </style>
 </head>
 <body>
@@ -97,6 +105,9 @@ const start = plan.start ? toDate(plan.start) : null, end = plan.end ? toDate(pl
 const span = start && end ? Math.max(DAY, end - start) : 0;
 const at = d => Math.max(0, Math.min(100, (d - start) / span * 100));
 
+// Every section heading carries data-nav (its short label for the jump bar) and an id.
+const h2 = (id, label, text) => `<h2 id="sec-${id}" data-nav="${esc(label)}">${esc(text || label)}</h2>`;
+
 function tilesHtml() {
   const t = (P.tiles || []).map(x => {
     const v = x.value == null ? (end ? String(Math.max(0, Math.ceil((end - today) / DAY))) : "–") : x.value;
@@ -105,12 +116,12 @@ function tilesHtml() {
   }).join("");
   const c = P.current || {}, m = byId[c.module];
   const next = c.next_step ? `<div class="next"><b>Next${m ? " · " + esc(m.title) : ""}</b>${esc(c.next_step)}</div>` : "";
-  return `<h2>Progress</h2><div class="tiles">${t}</div>${next}`;
+  return `${h2("progress", "Progress")}<div class="tiles">${t}</div>${next}`;
 }
 
 function curriculumHtml() {
   if (!cur.length) return "";
-  return `<h2>Curriculum</h2>` + cur.map(m => {
+  return h2("curriculum", "Curriculum") + cur.map(m => {
     const p = pctOf(m);
     const info = m.status === "done" ? "done" : m.total > 0 ? `${m.done}/${m.total}` : m.status;
     return `<div class="row${(P.current || {}).module === m.id ? " cur" : ""}"><div class="top"><span>${esc(m.title)}</span><span>${esc(info)}</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`;
@@ -141,7 +152,7 @@ function milestonesHtml() {
     return `<div class="row"><div class="top"><span>${esc(m.title)}</span><span>${esc(tag)}${m.module ? " · " + pct + "%" : ""}</span></div>` +
       `<div class="track">${shape}<div class="now" style="left:${nowPos}%"></div></div></div>`;
   }).join("");
-  return `<h2>Milestones</h2><div class="axis"><span>${esc(fmt(start))}</span><span>${esc(fmt(end))}</span></div>${rows}`;
+  return `${h2("milestones", "Milestones")}<div class="axis"><span>${esc(fmt(start))}</span><span>${esc(fmt(end))}</span></div>${rows}`;
 }
 
 const GROUPS = [["page", "Pages"], ["doc", "Docs"], ["sheet", "Sheets"], ["deck", "Decks"], ["other", "Other"]];
@@ -152,15 +163,49 @@ function linksHtml() {
   return GROUPS.map(([k, name]) => {
     const items = all.filter(l => kindOf(l) === k);
     if (!items.length) return "";
-    return `<h2>${esc(name)}</h2>` + items.map(l => `<a class="btn" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener" style="--c:${esc(safeColor(l.color))}">` +
+    return h2(k, name) + items.map(l => `<a class="btn" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener" style="--c:${esc(safeColor(l.color))}">` +
       `<span class="i">${esc(l.icon)}</span><span><div class="t">${esc(l.label)}</div>${l.sub ? `<div class="s">${esc(l.sub)}</div>` : ""}</span></a>`).join("");
   }).join("");
 }
 
 document.title = HUB.title || "Hub";
-document.getElementById("app").innerHTML =
+const app = document.getElementById("app");
+app.innerHTML =
   `<header><div class="ico">${esc(HUB.icon)}</div><h1>${esc(HUB.title)}</h1>${P.updated ? `<p>Updated ${esc(P.updated)}</p>` : ""}</header>` +
+  `<nav class="nav" id="nav" aria-label="Sections"></nav>` +
   tilesHtml() + curriculumHtml() + milestonesHtml() + linksHtml();
+
+// Jump bar: one chip per section that exists. Scroll with scrollIntoView (hash links break inside artifact frames).
+const heads = [...app.querySelectorAll("h2[data-nav]")];
+const nav = document.getElementById("nav");
+if (heads.length < 2) nav.remove();
+else {
+  nav.innerHTML = heads.map(h => `<button type="button" data-t="${esc(h.id)}">${esc(h.dataset.nav)}</button>`).join("");
+  const btns = [...nav.querySelectorAll("button")];
+  const mark = id => btns.forEach(b => {
+    const on = b.dataset.t === id;
+    b.classList.toggle("on", on);
+    if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+  });
+  nav.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const h = document.getElementById(b.dataset.t); if (!h) return;
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion:reduce)").matches;
+    h.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    mark(b.dataset.t);
+  });
+  // Highlight the section in view while scrolling.
+  const upd = () => {
+    const y = 80; let id = heads[0].id;
+    heads.forEach(h => { if (h.getBoundingClientRect().top <= y) id = h.id; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) id = heads[heads.length - 1].id;
+    mark(id);
+    const on = nav.querySelector("button.on");
+    if (on) nav.scrollTo({ left: on.offsetLeft - 14, behavior: "auto" });
+  };
+  addEventListener("scroll", upd, { passive: true });
+  upd();
+}
 </script>
 </body>
 </html>
