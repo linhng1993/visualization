@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+
+# local build output and project data
+*.data.js
+hub.html
+state.json
+claude/
+visual-learn.zip

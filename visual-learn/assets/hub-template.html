@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hub</title>
+<style>
+:root{--bg:#F8FAFC;--card:#FFFFFF;--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--grey:#94A3B8;--accent:#6366F1;--tint:#E0E7FF;--today:#EC4899}
+@media (prefers-color-scheme:dark){:root{--bg:#0B1120;--card:#111827;--ink:#F1F5F9;--muted:#94A3B8;--line:#1F2937;--accent:#818CF8;--tint:#1E1B4B}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:18px 14px calc(40px + env(safe-area-inset-bottom))}
+header{text-align:center;margin-bottom:16px}
+header .ico{font-size:44px}
+header h1{margin:4px 0 0;font-size:26px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+h2{margin:22px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tile .v{font-size:28px;font-weight:800;line-height:1.1}
+.tile .l{color:var(--muted);font-size:13px;margin-top:2px}
+.next{margin-top:10px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:14px;padding:10px 14px;font-size:15px}
+.next b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.row{margin-bottom:10px}
+.row .top{display:flex;justify-content:space-between;gap:8px;font-size:15px;font-weight:600}
+.row .top span:last-child{color:var(--muted);font-weight:500;white-space:nowrap}
+.row.cur .top span:first-child{color:var(--accent)}
+.bar{height:10px;border-radius:6px;background:var(--tint);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.axis{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:6px}
+.track{position:relative;height:16px;margin-top:4px;border-radius:8px;background:var(--line)}
+.win{position:absolute;top:0;bottom:0;border-radius:8px;background:var(--tint);overflow:hidden;min-width:8px}
+.win i{display:block;height:100%;background:var(--accent)}
+.dot{position:absolute;top:1px;width:14px;height:14px;margin-left:-7px;background:var(--accent);transform:rotate(45deg);border-radius:3px}
+.now{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--today);border-radius:1px}
+.grp{margin:0 0 4px;font-size:13px;color:var(--muted)}
+a.btn{display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 16px;margin-bottom:10px;border-radius:14px;
+  background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c,var(--grey));color:inherit;text-decoration:none}
+a.btn .i{font-size:28px}
+a.btn .t{font-weight:700;font-size:18px}
+a.btn .s{color:var(--muted);font-size:14px}
+a.btn:active{transform:scale(.98)}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// ===== DATA (edit only this block; keep the markers) =====
+const HUB = {
+  title: "Example Course",
+  icon: "🎓",
+  progress: {
+    updated: "2026-01-15",
+    plan: { start: "2026-01-05", end: "2026-12-31", end_label: "course ends" },
+    current: { module: "M0", next_step: "Finish chunk 2, then start the lifecycle page" },
+    tiles: [   // value null = days left, computed live from plan.end
+      { label: "course ends", value: null },
+      { label: "modules done", value: "0 / 3" },
+      { label: "chunks done", value: "1 / 4" },
+      { label: "pages", value: "1" },
+      { label: "quizzes · avg score", value: "1 · 3.0/5" }
+    ],
+    curriculum: [
+      { id: "M0", title: "Foundations", status: "doing", done: 1, total: 4 },
+      { id: "M1", title: "Core concepts", status: "todo", done: 0, total: 0 },
+      { id: "M2", title: "Applications", status: "todo", done: 0, total: 0 }
+    ]
+  },
+  milestones: [
+    { id: "ms-M0", title: "Foundations", module: "M0", from: "2026-01-05", to: "2026-02-28" },
+    { id: "ms-M1", title: "Core concepts", module: "M1", from: "2026-03-01", to: "2026-06-30" },
+    { id: "ms-M2", title: "Applications", module: "M2", from: "2026-07-01", to: "2026-10-31" },
+    { id: "ms-exam", title: "Exam", module: null, from: "2026-11-15", to: "2026-11-15" }
+  ],
+  links: [   // kind: page | doc | sheet | deck | other
+    { label: "Concept map", sub: "Map", icon: "🌳", url: "https://example.com/sample-page", color: "#6366F1", kind: "page" },
+    { label: "Study plan", sub: "Doc", icon: "📄", url: "https://example.com/sample-doc", color: "#0EA5E9", kind: "doc" },
+    { label: "Quiz log", sub: "Sheet", icon: "📊", url: "https://example.com/sample-sheet", color: "#10B981", kind: "sheet" }
+  ]
+};
+// ===== END DATA =====
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const safeColor = c => /^#[0-9a-fA-F]{3,8}$/.test(c || "") ? c : "";
+const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "#";
+const DAY = 86400000;
+const toDate = s => new Date(s + "T00:00:00");
+const fmt = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });
+const q = new URLSearchParams(location.search).get("today");   // ?today=YYYY-MM-DD for testing
+const now = q && /^\d{4}-\d{2}-\d{2}$/.test(q) ? toDate(q) : new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+const P = HUB.progress || {}, plan = P.plan || {};
+const cur = P.curriculum || [];
+const pctOf = m => !m ? 0 : m.status === "done" ? 100 : m.total > 0 ? Math.min(100, Math.round(m.done / m.total * 100)) : 0;
+const byId = Object.fromEntries(cur.map(m => [m.id, m]));
+const start = plan.start ? toDate(plan.start) : null, end = plan.end ? toDate(plan.end) : null;
+const span = start && end ? Math.max(DAY, end - start) : 0;
+const at = d => Math.max(0, Math.min(100, (d - start) / span * 100));
+
+function tilesHtml() {
+  const t = (P.tiles || []).map(x => {
+    const v = x.value == null ? (end ? String(Math.max(0, Math.ceil((end - today) / DAY))) : "–") : x.value;
+    const l = x.value == null ? (x.label || "days left") : x.label;
+    return `<div class="tile"><div class="v">${esc(v)}</div><div class="l">${x.value == null ? "days left · " : ""}${esc(l)}</div></div>`;
+  }).join("");
+  const c = P.current || {}, m = byId[c.module];
+  const next = c.next_step ? `<div class="next"><b>Next${m ? " · " + esc(m.title) : ""}</b>${esc(c.next_step)}</div>` : "";
+  return `<h2>Progress</h2><div class="tiles">${t}</div>${next}`;
+}
+
+function curriculumHtml() {
+  if (!cur.length) return "";
+  return `<h2>Curriculum</h2>` + cur.map(m => {
+    const p = pctOf(m);
+    const info = m.status === "done" ? "done" : m.total > 0 ? `${m.done}/${m.total}` : m.status;
+    return `<div class="row${(P.current || {}).module === m.id ? " cur" : ""}"><div class="top"><span>${esc(m.title)}</span><span>${esc(info)}</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`;
+  }).join("");
+}
+
+function milestonesHtml() {
+  const ms = HUB.milestones || [];
+  if (!ms.length || !span) return "";
+  const nowPos = at(today);
+  const rows = ms.map(m => {
+    const f = toDate(m.from), e = toDate(m.to);
+    const mod = m.module ? byId[m.module] : null, pct = pctOf(mod);
+    let tag;
+    if (!m.module) {
+      const d = Math.ceil((e - today) / DAY);
+      tag = d < 0 ? "passed" : d === 0 ? "today" : `in ${d} d`;
+    } else if (pct >= 100) tag = "✅ done";
+    else if (today < f) tag = "later";
+    else if (today > e) tag = "⚠️ late";
+    else {
+      const exp = e > f ? (today - f) / (e - f) : 1;
+      tag = pct / 100 < exp - 0.15 ? "⚠️ behind" : "on track";
+    }
+    const shape = m.module
+      ? `<div class="win" style="left:${at(f)}%;width:${Math.max(0.5, at(e) - at(f))}%"><i style="width:${pct}%"></i></div>`
+      : `<div class="dot" style="left:${at(f)}%"></div>`;
+    return `<div class="row"><div class="top"><span>${esc(m.title)}</span><span>${esc(tag)}${m.module ? " · " + pct + "%" : ""}</span></div>` +
+      `<div class="track">${shape}<div class="now" style="left:${nowPos}%"></div></div></div>`;
+  }).join("");
+  return `<h2>Milestones</h2><div class="axis"><span>${esc(fmt(start))}</span><span>${esc(fmt(end))}</span></div>${rows}`;
+}
+
+const GROUPS = [["page", "Pages"], ["doc", "Docs"], ["sheet", "Sheets"], ["deck", "Decks"], ["other", "Other"]];
+function linksHtml() {
+  const all = HUB.links || [];
+  const known = GROUPS.map(g => g[0]);
+  const kindOf = l => known.includes(l.kind) ? l.kind : "other";
+  return GROUPS.map(([k, name]) => {
+    const items = all.filter(l => kindOf(l) === k);
+    if (!items.length) return "";
+    return `<h2>${esc(name)}</h2>` + items.map(l => `<a class="btn" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener" style="--c:${esc(safeColor(l.color))}">` +
+      `<span class="i">${esc(l.icon)}</span><span><div class="t">${esc(l.label)}</div>${l.sub ? `<div class="s">${esc(l.sub)}</div>` : ""}</span></a>`).join("");
+  }).join("");
+}
+
+document.title = HUB.title || "Hub";
+document.getElementById("app").innerHTML =
+  `<header><div class="ico">${esc(HUB.icon)}</div><h1>${esc(HUB.title)}</h1>${P.updated ? `<p>Updated ${esc(P.updated)}</p>` : ""}</header>` +
+  tilesHtml() + curriculumHtml() + milestonesHtml() + linksHtml();
+</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visual</title>
+<style>
+:root{
+  --bg:#F8FAFC; --card:#FFFFFF; --ink:#0F172A; --muted:#64748B; --line:#E2E8F0;
+  --grey:#94A3B8; --wrong:#DC2626; --right:#16A34A; --r:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0B1120; --card:#111827; --ink:#F1F5F9; --muted:#94A3B8; --line:#1F2937; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:14px 14px calc(40px + env(safe-area-inset-bottom))}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 4px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.centre{text-align:center;padding:20px 16px;border-width:2px}
+.centre .ico{font-size:44px;line-height:1}
+.centre h1{font-size:26px;margin:6px 0 4px}
+.centre p{margin:0;color:var(--muted)}
+.subject{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin-bottom:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;justify-content:center}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+/* map + flow */
+.tree{position:relative;margin-top:14px;padding-left:22px}
+.tree:before{content:"";position:absolute;left:9px;top:-14px;bottom:18px;width:2px;background:var(--line)}
+.branch{position:relative;margin-bottom:12px;border-left:5px solid var(--c,var(--grey))}
+.branch:before{content:"";position:absolute;left:-18px;top:24px;width:13px;height:2px;background:var(--line)}
+.bhead{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.num{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;color:#fff;background:var(--c,var(--grey))}
+.bico{font-size:22px}
+.leaves{list-style:none;margin:10px 0 0;padding:0}
+.leaf{padding:8px 0;border-top:1px dashed var(--line)}
+.leaf .m{font-weight:600}
+.leaf .g{color:var(--muted);font-size:15px}
+.leaf .e{font-style:italic;font-size:15px}
+.leaf .e:before{content:"→ ";font-style:normal;color:var(--muted)}
+.ref{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);margin-top:3px}
+.flow .step{border-left:5px solid var(--c,var(--grey))}
+.arrow{text-align:center;color:var(--muted);font-size:22px;line-height:1;margin:6px 0}
+/* table */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:15px}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{color:#fff;background:var(--c,var(--grey));font-size:15px}
+thead th:first-child{background:transparent;color:var(--muted)}
+thead th:nth-child(2){border-top-left-radius:10px}
+thead th:last-child{border-top-right-radius:10px}
+tbody th{font-weight:700;width:30%}
+td{border-left:3px solid var(--c,transparent)}
+/* strip */
+.strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.block{border-radius:10px;padding:8px 10px;background:color-mix(in srgb,var(--c,var(--grey)) 18%,var(--card));border:2px solid var(--c,var(--grey));text-align:center}
+.block b{display:block;font-size:18px}
+.block small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sgloss{color:var(--muted);font-size:15px;margin:0 0 14px 2px}
+/* tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border-top:5px solid var(--c,var(--grey));text-align:center}
+.tile .v{font-size:30px;font-weight:800}
+.tile .l{color:var(--muted);font-size:14px}
+/* mistakes */
+.mist{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;margin-bottom:10px}
+.mist .ico{font-size:20px;grid-row:span 3}
+.w{text-decoration:line-through;text-decoration-thickness:2px}
+.mist.col .w{color:var(--wrong)} .mist.col .ok{color:var(--right);font-weight:700}
+.mist.neu .w{color:var(--grey)} .mist.neu .ok{font-weight:700}
+.mist .w:before{content:"✗ ";text-decoration:none;display:inline-block}
+.mist .ok:before{content:"✓ ";display:inline-block}
+.mist:last-child{margin-bottom:0}
+.mist .note{grid-column:2;color:var(--muted);font-size:14px}
+/* self-test */
+.prompt{color:var(--muted);font-size:15px;margin:0 4px 10px}
+.q{margin-bottom:10px}
+.qrow{display:flex;gap:10px;align-items:flex-start}
+.qrow label{flex:none;display:grid;place-items:center;width:32px;height:32px}
+.qrow input{width:24px;height:24px;accent-color:var(--ink)}
+.qt{flex:1;font-weight:600}
+.gap{display:inline-block;min-width:3.5em;border-bottom:2px solid var(--ink);margin:0 2px}
+.reveal{margin-top:10px;width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.ans{display:none;margin-top:10px;padding:10px;border-radius:10px;background:var(--bg)}
+.q.open .ans{display:block}
+.score{display:flex;justify-content:space-between;align-items:center;margin:4px 4px 0;color:var(--muted);font-size:14px}
+.score button{border:0;background:none;color:var(--muted);text-decoration:underline;font:inherit;min-height:44px}
+.printans{display:none}
+.hubnav{margin:0 0 14px}
+.hubnav.end{margin:28px 0 0}
+.hubbtn{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:16px;text-decoration:none}
+.hubbtn:active{transform:scale(.98)}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff;color:#000;font-size:12pt}
+  main{max-width:none;padding:0}
+  .card{break-inside:avoid;border-color:#ccc}
+  .reveal,.score button,.qrow label,.hubnav{display:none}
+  .q .ans{display:none!important}
+  .printans{display:block;font-size:9pt;color:#444;margin-top:18px;border-top:1px solid #ccc;padding-top:6px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// ===== DATA (edit only this block; keep the markers) =====
+const PAGE = {
+  id: "example-01",
+  subject: "Biology",
+  title: "Photosynthesis",
+  icon: "🌱",
+  why: "How plants turn light into stored energy.",
+  layout: "map",               // map | flow | table | strip | tiles
+  colors: {                    // one colour = one meaning on this page
+    input:   { hex: "#F59E0B", label: "Input" },
+    process: { hex: "#0EA5E9", label: "Process" },
+    output:  { hex: "#8B5CF6", label: "Output" }
+  },
+  mistakeColors: true,         // false when the pack already uses red/green for meaning
+  items: [                     // map + flow: 3-7 items, labels <= 5 words
+    { label: "Inputs", icon: "☀️", color: "input",
+      leaves: [ { main: "Light, water, carbon dioxide", example: "Leaves catch light; roots bring water" } ] },
+    { label: "Light reactions", icon: "⚡", color: "process",
+      leaves: [ { main: "Light energy is captured as ATP", example: "Happens in the thylakoids" } ] },
+    { label: "Outputs", icon: "🍬", color: "output",
+      leaves: [ { main: "Glucose and oxygen", example: "Oxygen leaves through the stomata" } ] }
+  ],
+  table: null,                 // { columns:[{label,color}], rows:[{label, cells:[...]}] }
+  strips: null,                // [ { blocks:[{text,label,color}], gloss } ]
+  tiles: null,                 // [ { value, label, icon, color } ]
+  nav: { hub: "" },           // hub link from the index "Hub:" line; "" hides the button
+  mistakes: [
+    { wrong: "Plants breathe in oxygen to photosynthesise", right: "They take in carbon dioxide", icon: "🌬️" }
+  ],
+  selftest: {
+    style: "explain",          // gap | which | explain | recall
+    items: [
+      { q: "Name the three inputs.", a: "Light, water, carbon dioxide." },
+      { q: "Where do the light reactions happen?", a: "In the thylakoids." },
+      { q: "What are the outputs?", a: "Glucose and oxygen." }
+    ]
+  }
+};
+// ===== END DATA =====
+
+const PROMPTS = {
+  gap: "Fill the gap out loud, then tap Show.",
+  which: "Name it before you tap Show.",
+  explain: "Say it in one line, then tap Show.",
+  recall: "Cover the answer, recall it, then tap Show."
+};
+
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+function hex(key){ return (PAGE.colors && PAGE.colors[key]) ? PAGE.colors[key].hex : "var(--grey)"; }
+// Inline colour markup: [[key:text]] -> text in that colour. ___ -> gap line.
+function fmt(s){
+  return esc(s)
+    .replace(/\[\[([\w-]+):(.+?)\]\]/g, (m, k, t) => `<span style="color:${hex(k)};font-weight:700">${t}</span>`)
+    .replace(/_{3,}/g, '<span class="gap">&nbsp;</span>');
+}
+function hubNav(cls){
+  const u = String((PAGE.nav && PAGE.nav.hub) || "").trim();
+  if (!/^https?:\/\//i.test(u)) return "";   // empty or non-http(s): no button
+  return `<nav class="hubnav ${cls}"><a class="hubbtn" href="${esc(u)}" target="_blank" rel="noopener">← Hub</a></nav>`;
+}
+function store(){ try { return window.localStorage; } catch(e){ return null; } }
+function loadTicks(){ try { return JSON.parse(store().getItem("vl:" + PAGE.id) || "{}"); } catch(e){ return {}; } }
+function saveTicks(t){ try { store().setItem("vl:" + PAGE.id, JSON.stringify(t)); } catch(e){} }
+
+function leavesHTML(leaves){
+  if (!leaves || !leaves.length) return "";
+  return '<ul class="leaves">' + leaves.map(l =>
+    `<li class="leaf"><div class="m">${fmt(l.main)}</div>` +
+    (l.gloss ? `<div class="g">${fmt(l.gloss)}</div>` : "") +
+    (l.example ? `<div class="e">${fmt(l.example)}</div>` : "") +
+    (l.ref ? `<span class="ref">${esc(l.ref)}</span>` : "") + `</li>`).join("") + "</ul>";
+}
+
+function centre(){
+  const legend = Object.entries(PAGE.colors || {}).map(([k, c]) =>
+    `<span class="chip"><span class="dot" style="background:${c.hex}"></span>${esc(c.label)}</span>`).join("");
+  return `<section class="card centre">
+    ${PAGE.subject ? `<span class="subject">${esc(PAGE.subject)}</span>` : ""}
+    <div class="ico">${esc(PAGE.icon)}</div>
+    <h1>${fmt(PAGE.title)}</h1>
+    <p>${fmt(PAGE.why)}</p>
+    ${legend ? `<div class="legend">${legend}</div>` : ""}
+  </section>`;
+}
+
+function body(){
+  const L = PAGE.layout;
+  if (L === "map") {
+    return '<div class="tree">' + (PAGE.items || []).map((b, i) =>
+      `<section class="card branch" style="--c:${hex(b.color)}">
+        <div class="bhead"><span class="num">${i + 1}</span>${b.icon ? `<span class="bico">${esc(b.icon)}</span>` : ""}<span>${fmt(b.label)}</span></div>
+        ${leavesHTML(b.leaves)}</section>`).join("") + "</div>";
+  }
+  if (L === "flow") {
+    return '<div class="flow" style="margin-top:14px">' + (PAGE.items || []).map((b, i) =>
+      (i ? '<div class="arrow">↓</div>' : "") +
+      `<section class="card step" style="--c:${hex(b.color)}">
+        <div class="bhead"><span class="num">${i + 1}</span>${b.icon ? `<span class="bico">${esc(b.icon)}</span>` : ""}<span>${fmt(b.label)}</span></div>
+        ${leavesHTML(b.leaves)}</section>`).join("") + "</div>";
+  }
+  if (L === "table" && PAGE.table) {
+    const cols = PAGE.table.columns || [];
+    return `<div class="card tablewrap" style="margin-top:14px;padding:8px"><table>
+      <thead><tr><th></th>${cols.map(c => `<th style="--c:${hex(c.color)}">${fmt(c.label)}</th>`).join("")}</tr></thead>
+      <tbody>${(PAGE.table.rows || []).map(r => `<tr><th>${r.icon ? esc(r.icon) + " " : ""}${fmt(r.label)}</th>${
+        (r.cells || []).map((cell, j) => `<td style="--c:${hex((cols[j] || {}).color)}">${fmt(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div>`;
+  }
+  if (L === "strip" && PAGE.strips) {
+    return '<div class="card" style="margin-top:14px">' + PAGE.strips.map(s =>
+      `<div class="strip">${(s.blocks || []).map(bl =>
+        `<div class="block" style="--c:${hex(bl.color)}"><b>${fmt(bl.text)}</b>${bl.label ? `<small>${esc(bl.label)}</small>` : ""}</div>`).join("")}</div>` +
+      (s.gloss ? `<p class="sgloss">${fmt(s.gloss)}</p>` : "")).join("") + "</div>";
+  }
+  if (L === "tiles" && PAGE.tiles) {
+    return '<div class="tiles" style="margin-top:14px">' + PAGE.tiles.map(t =>
+      `<div class="card tile" style="--c:${hex(t.color)}">${t.icon ? `<div style="font-size:22px">${esc(t.icon)}</div>` : ""}
+        <div class="v">${esc(t.value)}</div><div class="l">${fmt(t.label)}</div></div>`).join("") + "</div>";
+  }
+  return "";
+}
+
+function mistakes(){
+  const M = PAGE.mistakes || [];
+  if (!M.length) return "";
+  const cls = PAGE.mistakeColors === false ? "neu" : "col";
+  return `<h2>My mistakes → fix</h2><section class="card">` + M.map(m =>
+    `<div class="mist ${cls}"><span class="ico">${esc(m.icon || "⚠️")}</span>
+      <div class="w">${fmt(m.wrong)}</div><div class="ok">${fmt(m.right)}</div>
+      ${m.note ? `<div class="note">${fmt(m.note)}</div>` : ""}</div>`).join("") + "</section>";
+}
+
+function selftest(){
+  const T = PAGE.selftest;
+  if (!T || !T.items || !T.items.length) return "";
+  return `<h2>Self-test</h2><p class="prompt">${esc(T.prompt || PROMPTS[T.style] || PROMPTS.recall)}</p>` +
+    T.items.map((it, i) =>
+      `<section class="card q" id="q${i}">
+        <div class="qrow"><label aria-label="Got it"><input type="checkbox" data-i="${i}"></label><div class="qt">${fmt(it.q)}</div></div>
+        <button class="reveal" data-i="${i}">Show</button>
+        <div class="ans">${fmt(it.a)}</div></section>`).join("") +
+    `<div class="score"><span id="score"></span><button id="reset">Reset ticks</button></div>
+     <div class="printans"><b>Answers:</b> ${T.items.map((it, i) => `${i + 1}. ${fmt(it.a)}`).join(" · ")}</div>`;
+}
+
+function render(){
+  document.title = (PAGE.title || "Visual").replace(/\[\[[\w-]+:(.+?)\]\]/g, "$1");
+  document.getElementById("app").innerHTML = hubNav("top") + centre() + body() + mistakes() + selftest() + hubNav("end");
+  const ticks = loadTicks();
+  const boxes = [...document.querySelectorAll('.qrow input')];
+  const score = () => { const el = document.getElementById("score"); if (el) el.textContent = `${boxes.filter(b => b.checked).length} / ${boxes.length} got it`; };
+  boxes.forEach(b => { b.checked = !!ticks[b.dataset.i]; b.addEventListener("change", () => { ticks[b.dataset.i] = b.checked; saveTicks(ticks); score(); }); });
+  document.querySelectorAll(".reveal").forEach(btn => btn.addEventListener("click", () => {
+    const q = document.getElementById("q" + btn.dataset.i); q.classList.toggle("open");
+    btn.textContent = q.classList.contains("open") ? "Hide" : "Show";
+  }));
+  const r = document.getElementById("reset");
+  if (r) r.addEventListener("click", () => { boxes.forEach(b => b.checked = false); for (const k in ticks) delete ticks[k]; saveTicks(ticks); score(); });
+  score();
+}
+render();
+</script>
+</body>
+</html>
